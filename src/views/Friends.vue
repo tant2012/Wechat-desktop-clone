@@ -70,7 +70,7 @@
 
 <script>
 import "../assets/css/friend.less";
-import { computed, reactive, ref, inject, onBeforeMount } from "vue";
+import { computed, ref, inject, onMounted } from "vue";
 import Search from "../components/Search.vue";
 import router from "../router";
 import http from "../utils/http";
@@ -82,20 +82,21 @@ export default {
   setup() {
     const searchValue = ref("");
 
-    let friends = reactive([]);
+    let friends = ref();
     const currentUser = computed(() => {
       let user = null;
+      if (friends.value) {
+        for (let i = 0; i < friends.value.length; i++) {
+          const friend = friends.value[i];
 
-      for (let i = 0; i < friends.length; i++) {
-        const friend = friends[i];
-
-        user = friend.users.find((u) => u.id === selectedUserId.value);
-        if (user) {
-          break;
+          user = friend.users.find((u) => u.id === selectedUserId.value);
+          if (user) {
+            break;
+          }
         }
-      }
 
-      return user;
+        return user;
+      }
     });
     let selectedUserId = ref();
     let recents = inject("recents");
@@ -130,9 +131,13 @@ export default {
           token: user.token,
         },
       });
-      friends =  data ;
-      console.log(friends);
+      friends.value = data;
+      selectedUserId.value = friends.value[0].users[0].id
+      // console.log(friends.value[0].users[0].id);
     }
+
+    loadFriends();
+
     return {
       searchValue,
       friends,
@@ -144,10 +149,6 @@ export default {
       user,
       Search,
     };
-  },
-  async created() {
-    await this.loadFriends();
-    this.selectedUserId = this.friends[0]?.users[0]?.id;
   },
 };
 </script>
