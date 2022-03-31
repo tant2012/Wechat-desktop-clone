@@ -29,4 +29,18 @@ const router = createRouter({
     ]
 })
 
+router.beforeEach((to, from, next) => {
+    if (to.path.toLowerCase() === '/login') {
+      next()
+    } else {
+      const user = JSON.parse(localStorage.getItem('user'))
+      if (user?.token) {
+        next()
+      } else {
+        alert('请先登陆')
+        next('/login')
+      }
+    }
+  })
+
 export default router

@@ -94,6 +94,7 @@ import Search from "../components/Search.vue";
 import Emoji from "../components/Emoji.vue";
 import dayjs from "dayjs";
 
+
 export default {
   components: {
     Search,
@@ -103,7 +104,7 @@ export default {
     let content = ref("");
     let showEmoji = ref(false);
     let showWarn = ref(false);
-    let selectedIndex = ref(0);
+    let selectedIndex = ref();
     const user = inject("user");
     const searchValue = ref("");
     let wrapper = ref(null);
@@ -112,11 +113,11 @@ export default {
       return inject("recents");
     });
     const currentUser = computed(() => {
-      return inject("recents")[selectedIndex.value];
+      return recents.value[selectedIndex.value];
     });
 
     const searchList = computed(() => {
-      return inject("recents").filter((r) =>
+      return recents.value.filter((r) =>
         r.user.nickname.startsWith(searchValue.value)
       );
     });
@@ -176,7 +177,10 @@ export default {
           });
         }
 
-        content.value = "";
+        
+        window.localStorage.setItem('recents' + user.id, JSON.stringify(recents))
+
+        content.value = ""; 
 
         nextTick(() => {
           this.wrapper.scrollTop = this.wrapper.scrollHeight;

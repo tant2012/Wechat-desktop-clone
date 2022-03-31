@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.26.1",
+    "circular-json": "^0.5.9",
     "dayjs": "^1.10.8",
     "less": "^4.1.2",
     "vue": "^3.2.25",

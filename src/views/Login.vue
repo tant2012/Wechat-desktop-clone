@@ -65,9 +65,7 @@ export default {
 
         if (data.success) {
           localStorage.setItem("user", JSON.stringify(data.user));
-          
           user = data.user;
-
           router.push("/chat");
         } else {
           alert("login failed");

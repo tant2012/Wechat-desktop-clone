@@ -30,7 +30,18 @@
 </template>
 
 <script>
+import { inject } from '@vue/runtime-core';
 import "../assets/css/chat.less";
+
+export default {
+  setup(){
+    let user = inject('user')
+    const recents = JSON.parse(localStorage.getItem('recents' + user?.id ) || '[]')
+
+    return {recents, user}
+  }
+}
+
 </script>
 
 <style></style>

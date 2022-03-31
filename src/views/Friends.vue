@@ -70,7 +70,7 @@
 
 <script>
 import "../assets/css/friend.less";
-import { computed, ref, inject, onMounted } from "vue";
+import { computed, ref, inject } from "vue";
 import Search from "../components/Search.vue";
 import router from "../router";
 import http from "../utils/http";
@@ -100,7 +100,7 @@ export default {
     });
     let selectedUserId = ref();
     let recents = inject("recents");
-    let user = inject("user");
+    let user = inject("user")
 
     function handleSend() {
       const recent = {
@@ -121,6 +121,8 @@ export default {
         recents.unshift(tmp[0]);
       }
 
+      console.log(recents)
+      window.localStorage.setItem('recents' + recents[0].user.id, JSON.stringify(recents))
       // console.log(recents);
       router.push("/chat");
     }

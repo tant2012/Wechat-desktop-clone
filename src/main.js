@@ -1,4 +1,4 @@
-import { createApp, reactive } from "vue";
+import { createApp, reactive, ref } from "vue";
 import App from "./App.vue";
 import router from "./router/index";
 import http from "./plugins/index";
@@ -11,7 +11,7 @@ import "./assets/fonts/iconfont.css";
 
 const app = createApp(App);
 const recents = reactive([]);
-const user = reactive(JSON.parse(localStorage.getItem("user")));
+const user = reactive(JSON.parse(localStorage.getItem("user")))
 app.use(router);
 app.use(http);
 app.mount("#index");
