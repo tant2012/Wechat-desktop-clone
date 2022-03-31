@@ -10,7 +10,7 @@ import "./assets/css/base.less";
 import "./assets/fonts/iconfont.css";
 
 const app = createApp(App);
-const recents = reactive([]);
+const recents = reactive(JSON.parse(localStorage.getItem("recents")) || []);
 const user = reactive(JSON.parse(localStorage.getItem("user")))
 app.use(router);
 app.use(http);

@@ -122,6 +122,7 @@ export default {
       }
 
       console.log(recents)
+      window.localStorage.setItem('recents', JSON.stringify(recents))
       window.localStorage.setItem('recents' + recents[0].user.id, JSON.stringify(recents))
       // console.log(recents);
       router.push("/chat");

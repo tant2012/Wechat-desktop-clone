@@ -176,8 +176,9 @@ export default {
             self: false,
           });
         }
-
-        
+        const index = recents.value.findIndex((r) => r.user.id === currentUser.value.user.id);
+        if(index > -1)recents.value.splice(index, 1,recents.value[index]);
+        window.localStorage.setItem('recents', JSON.stringify(recents.value))
         window.localStorage.setItem('recents' + user.id, JSON.stringify(recents))
 
         content.value = ""; 
