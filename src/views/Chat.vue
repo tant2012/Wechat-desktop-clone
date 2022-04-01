@@ -143,12 +143,12 @@ export default {
       return getTime(item.messages[item.messages.length - 1]?.time);
     }
     function isSameTime(time) {
-        if (preTime.value === time) {
-          return true;
-        } else {
-          preTime.value = time;
-          return false;
-        }
+      if (preTime.value === time) {
+        return true;
+      } else {
+        preTime.value = time;
+        return false;
+      }
     }
     function getLastContent(item) {
       return item.messages[item.messages.length - 1]?.content;
@@ -168,6 +168,13 @@ export default {
           content: content.value,
           self: true,
         });
+        const index = recents.value.findIndex(
+          (r) => r.user.id === currentUser.value.user.id
+        );
+        if (index > -1) recents.value.splice(index, 1, recents.value[index]);
+
+        window.localStorage.setItem("recents", JSON.stringify(recents.value));
+
         socket.emit("message", {
           from: user.id,
           to: currentUser.value.user.id,
@@ -203,7 +210,6 @@ export default {
       }
       return content;
     }
-
 
     onMounted(() => {
       socket = io("http://127.0.0.1:5500", {
@@ -299,7 +305,7 @@ export default {
       handleChatbox,
       socket,
       replaceEmoji,
-      isSameTime
+      isSameTime,
     };
   },
 };
