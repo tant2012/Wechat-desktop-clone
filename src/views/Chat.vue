@@ -9,7 +9,7 @@
           v-for="(item, index) in searchList"
           :key="item.user.id"
           :class="{ active: selectedIndex === index }"
-          @click="selectedIndex = index"
+          @click="handleChatbox(index)"
           class="session-list"
         >
           <div class="list-left">
@@ -88,12 +88,11 @@
 
 <script>
 import "../assets/css/chat.less";
-import { inject, ref, computed, nextTick } from "vue";
-import axios from "axios";
+import { inject, ref, computed, nextTick, onMounted } from "vue";
+import { io } from "socket.io-client";
 import Search from "../components/Search.vue";
 import Emoji from "../components/Emoji.vue";
 import dayjs from "dayjs";
-
 
 export default {
   components: {
@@ -104,10 +103,12 @@ export default {
     let content = ref("");
     let showEmoji = ref(false);
     let showWarn = ref(false);
-    let selectedIndex = ref();
     const user = inject("user");
     const searchValue = ref("");
+    let selectedIndex = ref(JSON.parse(localStorage.getItem("selectedIndex")));
     let wrapper = ref(null);
+    let friends = inject("friends");
+    let socket = null;
 
     const recents = computed(() => {
       return inject("recents");
@@ -148,39 +149,20 @@ export default {
           self: true,
         });
 
-        if (currentUser.value.user.robot) {
-          const url = "/api/v2";
-          const postData = {
-            reqType: 0,
-            perception: {
-              inputText: {
-                text: content.value,
-              },
-              selfInfo: {
-                location: {
-                  city: "河北省",
-                  province: "邯郸市",
-                  street: "中华路",
-                },
-              },
-            },
-            userInfo: {
-              apiKey: "25d308027eb147d6b440b78db3d8ab23",
-              userId: 123,
-            },
-          };
-          const { data } = await axios.post(url, postData);
-          currentUser.value.messages.push({
-            time: Date.now(),
-            content: data.results[0].values.text,
-            self: false,
-          });
-        }
+        const index = recents.value.findIndex(
+          (r) => r.user.id === currentUser.value.user.id
+        );
+        if (index > -1) recents.value.splice(index, 1, recents.value[index]);
 
-        
-        window.localStorage.setItem('recents' + user.id, JSON.stringify(recents))
+        window.localStorage.setItem("recents", JSON.stringify(recents.value));
 
-        content.value = ""; 
+        socket.emit("message", {
+          from: user.id,
+          to: currentUser.value.user.id,
+          content: content.value,
+          type: "user",
+        });
+        content.value = "";
 
         nextTick(() => {
           this.wrapper.scrollTop = this.wrapper.scrollHeight;
@@ -192,6 +174,78 @@ export default {
       return time ? dayjs(time).format("HH:mm") : "";
     }
 
+    function handleChatbox(index) {
+      selectedIndex.value = index;
+      window.localStorage.setItem(
+        "selectedIndex",
+        JSON.stringify(selectedIndex.value)
+      );
+    }
+
+    onMounted(() => {
+      socket = io("http://127.0.0.1:5500", {
+        path: "/mychat",
+        transports: ["websocket"],
+        query: {
+          user: JSON.stringify(user),
+        },
+      });
+
+      socket.on("connect", () => {
+        console.log("连接成功");
+
+        socket.on("disconnect", () => {
+          console.log("断开连接");
+        });
+
+        socket.on("message", ({ from, to, content, type }) => {
+          let recent = recents.value.find((r) => r.user.id === from);
+
+          if (!recent) {
+            // 如果最近聊天列表中不存在，再去好友列表中查找(把friends定义到全局的state中)
+            const currentUser = computed(() => {
+              let user = null;
+              for (let i = 0; i < friends.length; i++) {
+                const f = friends[i];
+                user = f.users.find((u) => u.id === from);
+
+                if (user) {
+                  break;
+                }
+                return user;
+              }
+            });
+            console.log(from, to);
+
+            // 构建最新好友列表中的项目
+            recent = {
+              user: {
+                id: this.currentUser?.id,
+                nickname: this.currentUser?.nickname,
+                icon: this.currentUser?.icon,
+                robot: this.currentUser?.robot,
+              },
+              messages: [],
+            };
+
+            // 把recent添加到recents中
+            this.recents.unshift(recent);
+          }
+
+          recent.messages.push({
+            self: false,
+            content: content,
+            time: Date.now(),
+          });
+
+          window.localStorage.setItem("recents", JSON.stringify(recents));
+
+          this.$nextTick(() => {
+            this.wrapper.scrollTop = this.wrapper.scrollHeight;
+          });
+        });
+      });
+    });
     return {
       showEmoji,
       searchValue,
@@ -208,6 +262,9 @@ export default {
       formatTime,
       wrapper,
       searchList,
+      index,
+      handleChatbox,
+      socket,
       Search,
     };
   },

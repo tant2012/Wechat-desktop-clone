@@ -10,10 +10,14 @@ import "./assets/css/base.less";
 import "./assets/fonts/iconfont.css";
 
 const app = createApp(App);
-const recents = reactive([]);
+const recents = reactive(JSON.parse(localStorage.getItem('recents')) || []);
 const user = reactive(JSON.parse(localStorage.getItem("user")))
+const friends = ref([])
+
 app.use(router);
 app.use(http);
 app.mount("#index");
 app.provide("recents", recents);
 app.provide("user", user);
+app.provide("friends", friends);
+

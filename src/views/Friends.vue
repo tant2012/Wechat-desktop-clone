@@ -73,7 +73,6 @@ import "../assets/css/friend.less";
 import { computed, ref, inject } from "vue";
 import Search from "../components/Search.vue";
 import router from "../router";
-import http from "../utils/http";
 
 export default {
   components: {
@@ -82,7 +81,7 @@ export default {
   setup() {
     const searchValue = ref("");
 
-    let friends = ref();
+    let friends = inject("friends");
     const currentUser = computed(() => {
       let user = null;
       if (friends.value) {
@@ -98,9 +97,9 @@ export default {
         return user;
       }
     });
-    let selectedUserId = ref();
+    let selectedUserId = ref(0);
     let recents = inject("recents");
-    let user = inject("user")
+    let user = inject("user");
 
     function handleSend() {
       const recent = {
@@ -121,24 +120,10 @@ export default {
         recents.unshift(tmp[0]);
       }
 
-      console.log(recents)
-      window.localStorage.setItem('recents' + recents[0].user.id, JSON.stringify(recents))
-      // console.log(recents);
+      window.localStorage.setItem("recents", JSON.stringify(recents));
+
       router.push("/chat");
     }
-
-    async function loadFriends() {
-      const { data } = await http.get("/friends", {
-        headers: {
-          token: user.token,
-        },
-      });
-      friends.value = data;
-      selectedUserId.value = friends.value[0].users[0].id
-      // console.log(friends.value[0].users[0].id);
-    }
-
-    loadFriends();
 
     return {
       searchValue,
@@ -147,7 +132,6 @@ export default {
       currentUser,
       handleSend,
       recents,
-      loadFriends,
       user,
       Search,
     };
