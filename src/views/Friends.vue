@@ -10,8 +10,8 @@
           <div
             v-for="user in item.users"
             :key="user.id"
-            :class="{ active: selectedUserId === user.id }"
-            @click="selectedUserId = user.id"
+            :class="{ active: user.id === selectedUserId }"
+            @click="handleSelectedUser(user)"
             class="friend-info"
           >
             <img
@@ -29,7 +29,7 @@
   <div class="friend-info">
     <!-- 好友详情 -->
     <div class="info-wrapper">
-      <div class="friend-info">
+      <div class="friend-info" v-if="currentUser">
         <div class="es-info">
           <div class="left">
             <div class="people">
@@ -73,33 +73,34 @@ import "../assets/css/friend.less";
 import { computed, ref, inject } from "vue";
 import Search from "../components/Search.vue";
 import router from "../router";
+import http from "../utils/http";
 
 export default {
   components: {
     Search,
   },
   setup() {
-    const searchValue = ref("");
+    const friends = inject("friends");
+    const recents = inject("recents");
+    const user = inject("user");
 
-    let friends = inject("friends");
+    let searchValue = ref("");
+    let selectedUserId = ref();
+
     const currentUser = computed(() => {
       let user = null;
-      if (friends.value) {
-        for (let i = 0; i < friends.value.length; i++) {
-          const friend = friends.value[i];
 
-          user = friend.users.find((u) => u.id === selectedUserId.value);
-          if (user) {
-            break;
-          }
+      for (let i = 0; i < friends.value.length; i++) {
+        const friend = friends.value[i];
+
+        user = friend.users.find((u) => u.id === selectedUserId.value);
+        if (user) {
+          break;
         }
-
-        return user;
       }
+
+      return user;
     });
-    let selectedUserId = ref(0);
-    let recents = inject("recents");
-    let user = inject("user");
 
     function handleSend() {
       const recent = {
@@ -125,13 +126,31 @@ export default {
       router.push("/chat");
     }
 
+    function handleSelectedUser(user) {
+      selectedUserId.value = user.id;
+    }
+
+    async function loadFriends() {
+      const { data } = await http.get("/friends", {
+        headers: {
+          token: user.token,
+        },
+      });
+      friends.value = data;
+      selectedUserId.value = friends.value[0]?.users[0]?.id;
+    }
+
+    loadFriends();
+
     return {
       searchValue,
       friends,
       selectedUserId,
+      handleSelectedUser,
       currentUser,
       handleSend,
       recents,
+      loadFriends,
       user,
       Search,
     };

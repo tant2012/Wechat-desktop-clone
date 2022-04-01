@@ -21,7 +21,11 @@ const router = createRouter({
                 {
                     path:'/friends',
                     component:()=> import('../views/Friends.vue')
-                }
+                },
+                {
+                  path:'/collection',
+                  component:()=> import('../views/Collection.vue')
+              }
             ]
 
 

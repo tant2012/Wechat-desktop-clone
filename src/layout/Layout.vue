@@ -11,10 +11,7 @@
           <!-- <a href="/friends" class="icon iconfont icon-friend"></a>
           <a href="#" class="icon iconfont icon-collection"></a> -->
           <router-link to="/chat" class="icon iconfont icon-msg"></router-link>
-          <router-link
-            to="/friends"
-            class="icon iconfont icon-friend"
-          ></router-link>
+          <router-link to="/friends" class="icon iconfont icon-friend"></router-link>
           <router-link
             to="/collection"
             class="icon iconfont icon-collection"
@@ -37,28 +34,13 @@
 
 <script>
 import "../assets/css/chat.less";
-import { inject, ref } from "vue";
-import http from "../utils/http";
+import { inject } from "vue";
 
 export default {
   setup() {
     const user = inject("user");
-    let friends = inject("friends");
-    let selectedUserId = ref(0);
 
-    async function loadFriends() {
-      const { data } = await http.get("/friends", {
-        headers: {
-          token: user.token,
-        },
-      });
-      friends.value = data;
-      selectedUserId.value = friends.value[0]?.users[0]?.id;
-    }
-
-    loadFriends();
-
-    return { user, friends, loadFriends };
+    return { user };
   },
 };
 </script>
