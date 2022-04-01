@@ -205,8 +205,8 @@ export default {
             // 如果最近聊天列表中不存在，再去好友列表中查找(把friends定义到全局的state中)
             const currentUser = computed(() => {
               let user = null;
-              for (let i = 0; i < friends.length; i++) {
-                const f = friends[i];
+              for (let i = 0; i < friends.value.length; i++) {
+                const f = friends.value[i];
                 user = f.users.find((u) => u.id === from);
 
                 if (user) {
@@ -220,16 +220,16 @@ export default {
             // 构建最新好友列表中的项目
             recent = {
               user: {
-                id: this.currentUser?.id,
-                nickname: this.currentUser?.nickname,
-                icon: this.currentUser?.icon,
-                robot: this.currentUser?.robot,
+                id: currentUser?.value?.id,
+                nickname: currentUser?.value?.nickname,
+                icon: currentUser?.value?.icon,
+                robot: currentUser?.value?.robot,
               },
               messages: [],
             };
 
             // 把recent添加到recents中
-            this.recents.unshift(recent);
+            recents.value.unshift(recent);
           }
 
           recent.messages.push({
@@ -238,7 +238,12 @@ export default {
             time: Date.now(),
           });
 
-          window.localStorage.setItem("recents", JSON.stringify(recents));
+          const index = recents.value.findIndex(
+            (r) => r.user.id === currentUser.value.user.id
+          );
+          if (index > -1) recents.value.splice(index, 1, recents.value[index]);
+
+          window.localStorage.setItem("recents", JSON.stringify(recents.value));
 
           this.$nextTick(() => {
             this.wrapper.scrollTop = this.wrapper.scrollHeight;
